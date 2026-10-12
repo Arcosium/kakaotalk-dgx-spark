@@ -17,7 +17,9 @@ Hangover + FEX runs the app. An isolated Xvfb desktop keeps it separate from you
 | Local Korean/English OCR for text-only agents | Confirmed |
 | Browser access through noVNC | Confirmed |
 | Open the file attachment chooser and browse Linux folders | Confirmed |
-| Send a server file attachment | Procedure included; actual upload not yet verified |
+| Send a server file attachment | Confirmed in My Chat with a 74-byte text file, after user approval |
+
+On 2026-10-12, a server-side `kakao-attachment-test.txt` was sent to **My Chat**. The test followed explicit user approval, opened the file chooser, selected the Linux file through Wine's `Z:` mapping, confirmed the separate **Send 1 files** dialog, and verified the resulting file bubble with the matching filename, 74-byte size and send time. This confirms a small text-file upload in the original working environment; a fresh remote download of that sent file, larger files and other attachment types were not checked in this test. No account names or chat screenshots are included here.
 
 The original working environment used Ubuntu 24.04.4 ARM64, 4 KB pages, Hangover 11.16 with FEX, and KakaoTalk 26.8.2.5324. This repository packages that implementation for other users. **The new setup script has not yet been exercised on a fresh machine.** Other ARM machines and later client versions may behave differently.
 
@@ -132,7 +134,7 @@ The workflow shows the recipient and exact text or file details, waits for expli
 | `type_text` | Unicode clipboard paste without Enter |
 | `scroll` | Scroll the hovered area |
 
-Server files are accessible through Wine's `Z:` mapping. For example, `/home/USER/projects/document.docx` becomes `Z:\home\USER\projects\document.docx` in Open or Save As. The skill obtains approval **before** confirming an attachment chooser, since selecting a file can send it immediately.
+Server files are accessible through Wine's `Z:` mapping. For example, `/home/USER/projects/document.docx` becomes `Z:\home\USER\projects\document.docx` in Open or Save As. The skill obtains approval **before** confirming an attachment chooser, since selecting a file can send it immediately. In the verified client version, confirming Open displayed a separate **Send 1 files** dialog; the agent checked its filename and size before clicking that button once and verifying the final file bubble.
 
 ## Troubleshooting and limits
 
