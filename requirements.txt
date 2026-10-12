@@ -1,0 +1,3 @@
+mcp>=1.12,<2
+Pillow>=11,<13
+websockify>=0.13,<1

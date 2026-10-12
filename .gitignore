@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+runtime/
+_workspace/
+*.png
+*.docx
+*.pdf
+.env
+.env.*
