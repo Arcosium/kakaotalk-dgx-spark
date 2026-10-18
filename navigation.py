@@ -1,6 +1,7 @@
 """Verified chat-list navigation for agents that can read OCR but not icons."""
 import auth
 import desktop
+import time
 
 
 # Monochrome silhouette of the official client's chat-tab icon (26.8.2.5324).
@@ -86,5 +87,49 @@ def show_chats():
         return {'status': 'needs_inspection', 'message': 'Chat list was not verified after navigation.'}
     return {'status': 'ready', 'view': 'chats', 'window': dict(zip(('x', 'y', 'width', 'height'), box)),
             'words': [{key: value for key, value in word.items() if key != 'pass'}
-                      for word in words if word['pass'] == 200],
+                      for word in words if word['pass'] == 200
+                      and box[0] <= word['x'] < box[0] + box[2]
+                      and box[1] <= word['y'] < box[1] + box[3]],
             'message': 'Chat list only. No room opened and no message sent. Select rows using these current coordinates.'}
+
+
+def read_chat():
+    """Read the active room, annotating the observed yellow outgoing bubbles."""
+    active = desktop.xdo('getactivewindow').strip()
+    title = desktop.xdo('getwindowname', active).strip()
+    if title in ('KakaoTalk', '카카오톡', 'Open', 'Save As') or not title:
+        return {'status': 'needs_inspection', 'message': 'The active window is not a verified chat room.'}
+    geometry = dict(line.split('=', 1) for line in
+                    desktop.xdo('getwindowgeometry', '--shell', active).splitlines() if '=' in line)
+    box = {name.lower(): int(geometry[name]) for name in ('X', 'Y', 'WIDTH', 'HEIGHT')}
+    picture, words = auth.observe()
+    result = []
+    for word in words:
+        if word['pass'] != 200 or not (box['x'] <= word['x'] < box['x'] + box['width']
+                                      and box['y'] <= word['y'] < box['y'] + box['height']):
+            continue
+        region = picture.crop((max(0, word['x'] - 2), max(0, word['y'] - 2),
+                               min(picture.width, word['x'] + word['width'] + 2),
+                               min(picture.height, word['y'] + word['height'] + 2))).convert('RGB')
+        yellow = sum(count for count, (r, g, b) in
+                     region.getcolors(maxcolors=region.width * region.height)
+                     if r > 220 and g > 190 and b < 160)
+        item = {key: value for key, value in word.items() if key != 'pass'}
+        item['bubble'] = 'outgoing' if yellow > region.width * region.height * 0.4 else 'other'
+        result.append(item)
+    return {'status': 'ready', 'room_title': title, 'window': box, 'words': result,
+            'message': 'Outgoing labels use the default yellow bubble background. Other text includes incoming messages and UI; do not infer outgoing from it. Only the visible PC-synced range was read.'}
+
+
+def open_chat(x, y):
+    """Open a currently observed chat-list row with a double click, then read it."""
+    state = show_chats()
+    if state['status'] != 'ready':
+        return state
+    box = state['window']
+    if not (box['x'] + 65 <= x < box['x'] + box['width'] - 15
+            and box['y'] + 90 <= y < box['y'] + box['height'] - 100):
+        return {'status': 'needs_inspection', 'message': 'Coordinates are outside the verified chat-list rows; no click made.'}
+    desktop.click(x, y, clicks=2)
+    time.sleep(0.4)
+    return read_chat()

@@ -13,7 +13,8 @@ mcp = FastMCP('kakao-desktop', instructions=(
     'and wait for explicit approval of that prepared transmission. An initial send request alone '
     'does not satisfy this approval step. Approval applies once to the shown recipient and payload. '
     'Confirm the visible room before sending. type_text pastes text without pressing Enter. '
-    'Call ensure_logged_in before a KakaoTalk task. Stored credentials are read locally only; '
+    'Use ensure_logged_in for status or show_chats then open_chat for recent messages. '
+    'Stored credentials are read locally only; '
     'never put account values in tool arguments or outputs. After a fallback login, inspect '
     'and reselect the recipient. Additional authentication requires direct user interaction.'))
 
@@ -39,6 +40,22 @@ def show_chats() -> str:
     Locates the chat-tab icon in a fresh screenshot and verifies the Chats header.
     Opens no room and sends nothing. Do not guess coordinates from an unreadable image."""
     return json.dumps(navigation.show_chats(), ensure_ascii=False)
+
+
+@mcp.tool()
+def open_chat(x: int, y: int) -> str:
+    """Open a room using its current show_chats row coordinates and read visible messages.
+    Performs the required double click and returns the room title and OCR words with
+    bubble=outgoing for the default yellow sent-message bubbles. Opens mark chats read.
+    Sends nothing. Prefer this over low-level click when reading recent sent messages."""
+    return json.dumps(navigation.open_chat(x, y), ensure_ascii=False)
+
+
+@mcp.tool(annotations={'readOnlyHint': True})
+def read_chat() -> str:
+    """Read the active chat room's visible messages, title and outgoing-bubble labels.
+    Use after scrolling a verified room; sends nothing. Labels assume default yellow bubbles."""
+    return json.dumps(navigation.read_chat(), ensure_ascii=False)
 
 
 @mcp.tool(annotations={'readOnlyHint': True})

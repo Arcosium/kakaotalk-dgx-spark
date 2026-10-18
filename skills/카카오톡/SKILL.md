@@ -7,10 +7,15 @@ description: 'Use for /카카오톡, KakaoTalk login, reading chats, sending mes
 
 Use the `kakao-desktop` MCP tools on the dedicated desktop. The local checkout is `{{REPO}}`; the interpreter is `{{PYTHON}}`. Setup and troubleshooting are in `{{REPO}}/README.md`.
 
+## Recent outgoing messages
+
+“최근에 보낸 카톡 뭐야?” is a screen lookup, not a memory lookup. With Hermes `tool_call`, use one entry in `calls`: first `name: mcp__kakao_desktop__show_chats` with `arguments: {}`, then `name: mcp__kakao_desktop__open_chat` with the chosen row's current `x` and `y`. These names and arguments are specified here; repeated search/describe calls are unnecessary unless invocation reports the tool is unavailable. Choose a room from its name and recent timestamp or ask which room if ambiguous. Answer from the returned `room_title` and `bubble: outgoing` words/timestamps, stating the room and PC-visible scope. No transmission is needed.
+
 ## Screen and login
 
-- Call `start_desktop`, then `ensure_logged_in` and inspect `screen`. Use `read_screen` for local Korean/English OCR when images are unavailable; verify important names and text against the image where possible.
+- Call `start_desktop`, then use `ensure_logged_in` for status checks or `show_chats` for recent-chat queries (it includes the login check). Inspect `screen` when images are available. Use `read_screen` for local Korean/English OCR otherwise; verify important names and text against the image where possible.
 - For recent chats or sent-message queries, use `show_chats`. It matches the chat-tab icon in a fresh screenshot, verifies the Chats header, and returns current room/preview/timestamp OCR coordinates. A `MEDIA:` path alone is not a view of the image. Never guess icon coordinates when the model cannot see them; stop if this navigation tool cannot verify the screen.
+- Open the chosen current row with `open_chat(x, y)`, which performs the required double click and returns the room title and message OCR. `bubble: outgoing` marks words on the default yellow sent-message background; other text can be incoming messages, timestamps or UI. After scrolling within a room, use `read_chat` again. Do not repeat single `click` calls to open a room.
 - `ensure_logged_in` reads credentials locally only when a logged-out login form is verified. It accepts no account arguments and returns no account values. `ready` permits continuing. After `logged_in`, inspect the new screen and reselect the intended room and input; stale coordinates and focus are invalid.
 - For `credentials_missing` or `credentials_invalid`, the user can register or replace the account once in their server terminal with `{{PYTHON}} {{REPO}}/credentials.py set`. Input is hidden and stored as a mode-600 file under `desktop.ROOT`, outside the repository. Never request credentials in chat, print them, or pass them to ordinary `type_text`, logs, agent configuration or GitHub.
 - `retry_blocked`, `needs_user` and `authentication_required` require direct user review. Do not automatically retry failed logins or bypass additional authentication. For `unknown` or an unrecognized screen, inspect before continuing. `type_text` checks the session too; if it returns `typed: false`, no message was entered. After fallback login, verify the recipient again before retrying the text.

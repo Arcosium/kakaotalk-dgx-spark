@@ -176,6 +176,8 @@ The workflow shows the recipient and exact text or file details, waits for expli
 | `start_desktop` | Start/reconnect the dedicated desktop |
 | `ensure_logged_in` | Check session; log in once from a verified form using local credentials |
 | `show_chats` | Open the verified chat list and return room/preview/timestamp OCR coordinates |
+| `open_chat` | Double-click a current chat-list row and return its title and message OCR |
+| `read_chat` | Read the active room with default yellow outgoing-bubble labels |
 | `screen` | Current PNG without retaining a screenshot |
 | `read_screen` | Local Korean/English OCR with coordinates |
 | `click`, `move_mouse` | Click or hover verified screen coordinates |
@@ -184,6 +186,8 @@ The workflow shows the recipient and exact text or file details, waits for expli
 | `scroll` | Scroll the hovered area |
 
 For text-only agents, `show_chats` avoids guessing the sidebar icon coordinates from OCR. It finds the current main window, matches the chat-tab silhouette in a fresh screenshot, and verifies the Chats header after switching. It does not open a room or send a message. The icon matcher targets the verified client version; changes in icon shape or display scale stop navigation without clicking an unrecognized target.
+
+Pass the current row coordinates to `open_chat(x, y)` to open a room with the required double click and read its title and visible messages. Words on the default yellow sent-message background receive `bubble: outgoing`; other text can include incoming messages, timestamps or UI. Custom themes require inspection. Opening a room can mark messages read. Use `read_chat` after scrolling. These tools do not send messages.
 
 Server files are accessible through Wine's `Z:` mapping. For example, `/home/USER/projects/document.docx` becomes `Z:\home\USER\projects\document.docx` in Open or Save As. The skill obtains approval **before** confirming an attachment chooser, since selecting a file can send it immediately. In the verified client version, confirming Open displayed a separate **Send 1 files** dialog; the agent checked its filename and size before clicking that button once and verifying the final file bubble.
 
