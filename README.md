@@ -154,12 +154,15 @@ mcp_servers:
 | --- | --- |
 | `start_desktop` | 전용 화면 시작·재접속 |
 | `ensure_logged_in` | 세션 확인, 로그아웃 시 로컬 계정으로 한 번 로그인 |
+| `show_chats` | 현재 화면에서 채팅 목록을 열고 방·미리보기·시각의 OCR 좌표 반환 |
 | `screen` | 현재 화면 PNG 반환, 파일 저장 없음 |
 | `read_screen` | 로컬 한글·영문 OCR과 좌표 반환 |
 | `click`, `move_mouse` | 확인한 화면 좌표 클릭·포인터 이동 |
 | `press` | 키 조합 입력. Enter는 메시지를 보낼 수 있음 |
 | `type_text` | 세션 확인 후 Enter 없이 Unicode 붙여넣기 |
 | `scroll` | 포인터가 가리키는 영역 스크롤 |
+
+이미지 입력이 없는 로컬 모델은 `show_chats`로 시작하면 친구 목록의 아이콘 좌표를 추측할 필요가 없습니다. 이 도구는 실제 창과 현재 화면의 채팅 탭 모양을 찾아 클릭하고 Chats 제목으로 결과를 검증합니다. 대화방을 열거나 메시지를 보내지는 않습니다. 아이콘은 확인한 클라이언트 버전을 기준으로 하며, 화면 배율·모양이 달라 일치하지 않으면 클릭하지 않고 확인을 요청합니다.
 
 서버의 `/home/USER/projects/document.docx`는 Wine 파일 선택 창에서 `Z:\home\USER\projects\document.docx`로 접근합니다. 확인한 버전에서는 Open 뒤에 **Send 1 files** 창이 나타났지만, 버전별 동작을 단정하지 않고 파일 선택 확정 전에 승인을 받습니다.
 

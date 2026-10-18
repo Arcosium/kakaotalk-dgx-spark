@@ -175,12 +175,15 @@ The workflow shows the recipient and exact text or file details, waits for expli
 | --- | --- |
 | `start_desktop` | Start/reconnect the dedicated desktop |
 | `ensure_logged_in` | Check session; log in once from a verified form using local credentials |
+| `show_chats` | Open the verified chat list and return room/preview/timestamp OCR coordinates |
 | `screen` | Current PNG without retaining a screenshot |
 | `read_screen` | Local Korean/English OCR with coordinates |
 | `click`, `move_mouse` | Click or hover verified screen coordinates |
 | `press` | Key combinations; Enter can send |
 | `type_text` | Session check, then Unicode clipboard paste without Enter |
 | `scroll` | Scroll the hovered area |
+
+For text-only agents, `show_chats` avoids guessing the sidebar icon coordinates from OCR. It finds the current main window, matches the chat-tab silhouette in a fresh screenshot, and verifies the Chats header after switching. It does not open a room or send a message. The icon matcher targets the verified client version; changes in icon shape or display scale stop navigation without clicking an unrecognized target.
 
 Server files are accessible through Wine's `Z:` mapping. For example, `/home/USER/projects/document.docx` becomes `Z:\home\USER\projects\document.docx` in Open or Save As. The skill obtains approval **before** confirming an attachment chooser, since selecting a file can send it immediately. In the verified client version, confirming Open displayed a separate **Send 1 files** dialog; the agent checked its filename and size before clicking that button once and verifying the final file bubble.
 

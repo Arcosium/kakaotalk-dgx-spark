@@ -10,6 +10,7 @@ Use the `kakao-desktop` MCP tools on the dedicated desktop. The local checkout i
 ## Screen and login
 
 - Call `start_desktop`, then `ensure_logged_in` and inspect `screen`. Use `read_screen` for local Korean/English OCR when images are unavailable; verify important names and text against the image where possible.
+- For recent chats or sent-message queries, use `show_chats`. It matches the chat-tab icon in a fresh screenshot, verifies the Chats header, and returns current room/preview/timestamp OCR coordinates. A `MEDIA:` path alone is not a view of the image. Never guess icon coordinates when the model cannot see them; stop if this navigation tool cannot verify the screen.
 - `ensure_logged_in` reads credentials locally only when a logged-out login form is verified. It accepts no account arguments and returns no account values. `ready` permits continuing. After `logged_in`, inspect the new screen and reselect the intended room and input; stale coordinates and focus are invalid.
 - For `credentials_missing` or `credentials_invalid`, the user can register or replace the account once in their server terminal with `{{PYTHON}} {{REPO}}/credentials.py set`. Input is hidden and stored as a mode-600 file under `desktop.ROOT`, outside the repository. Never request credentials in chat, print them, or pass them to ordinary `type_text`, logs, agent configuration or GitHub.
 - `retry_blocked`, `needs_user` and `authentication_required` require direct user review. Do not automatically retry failed logins or bypass additional authentication. For `unknown` or an unrecognized screen, inspect before continuing. `type_text` checks the session too; if it returns `typed: false`, no message was entered. After fallback login, verify the recipient again before retrying the text.
@@ -25,9 +26,11 @@ Install this same skill with `{{PYTHON}} {{REPO}}/install_skill.py local` and co
 
 Registration alone is insufficient when `platform_toolsets.cli` explicitly selects MCP servers: add both `kakao-desktop` and `skills` to the existing list. A custom chat/work mode plugin must retain both in chat mode. Existing processes may retain an old tool list; use a new process after changing the configuration. If tools appear unavailable, inspect the effective enabled toolsets before concluding that the server is unreachable.
 
+Hermes local `tool_call` accepts one entry in `calls` at a time. Execute dependent operations such as a click and its subsequent screen read sequentially. Text-only agents should use `show_chats` rather than guessing the sidebar icon position from OCR.
+
 ## Read chats
 
-Requests such as “최근에 보낸 카톡 뭐야?” (what did I last send on KakaoTalk?) require the actual KakaoTalk screen, not memory, wiki or general filesystem searches. Inspect recent rooms and timestamps in the chat list, verify the room title before opening, and distinguish outgoing bubbles from received messages. Ask which room if the target remains ambiguous. Report the room and PC-visible scope; do not claim a globally latest outgoing message without evidence.
+Requests such as “최근에 보낸 카톡 뭐야?” (what did I last send on KakaoTalk?) start with `show_chats`, not memory, wiki or general filesystem searches. Inspect recent rooms and timestamps in the returned list, verify the room title before opening at its current OCR coordinates, and distinguish outgoing bubbles from received messages. Ask which room if the target remains ambiguous. Report the room and PC-visible scope; do not claim a globally latest outgoing message without evidence.
 
 Open the requested room and verify its visible title and participants. Ask if names or room selection are ambiguous. Opening a room can mark messages read. Read only the requested range; separate sender, time and body. Only report messages visible or synced to this PC, not the complete mobile history.
 

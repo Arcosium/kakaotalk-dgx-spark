@@ -4,6 +4,7 @@ import json
 import desktop
 import manage
 import auth
+import navigation
 
 mcp = FastMCP('kakao-desktop', instructions=(
     'Operate only the dedicated KakaoTalk desktop. Inspect the screen before acting. '
@@ -29,6 +30,15 @@ def ensure_logged_in() -> str:
     No account arguments. After logged_in, reselect the room; unknown states require inspection.
     Authentication prompts or failed login stop without automatic retries."""
     return json.dumps(auth.ensure_logged_in(), ensure_ascii=False)
+
+
+@mcp.tool()
+def show_chats() -> str:
+    """Show recent KakaoTalk chat rooms and their preview/timestamp OCR coordinates.
+    For recent/last sent-message queries, call this before opening a room.
+    Locates the chat-tab icon in a fresh screenshot and verifies the Chats header.
+    Opens no room and sends nothing. Do not guess coordinates from an unreadable image."""
+    return json.dumps(navigation.show_chats(), ensure_ascii=False)
 
 
 @mcp.tool(annotations={'readOnlyHint': True})
