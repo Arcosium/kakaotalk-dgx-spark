@@ -7,3 +7,7 @@ _workspace/
 *.pdf
 .env
 .env.*
+login.json
+login-attempt.json
+credentials.json
+*.credentials.json

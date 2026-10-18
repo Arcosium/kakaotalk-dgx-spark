@@ -10,6 +10,8 @@
 
 실제 DGX Spark 환경에서 QR 로그인, 대화 읽기, 한글 붙여넣기, 승인 후 메시지 전송, 받은 DOCX 다운로드를 확인했습니다. 로컬 한글·영문 OCR을 제공해 이미지 입력이 없는 에이전트도 화면의 글자를 읽을 수 있습니다.
 
+2026-10-18에는 서버에 한 번 등록한 계정으로 로그아웃 화면에서 로그인하고 친구 목록을 확인했습니다. 로그인 유지 상태에서는 저장된 계정을 읽지 않습니다. 로컬 대화의 스킬 검색과 MCP 연결도 확인했습니다. 추가 인증과 로그인 실패는 사용자 확인을 기다리며 자동 재시도하지 않습니다.
+
 2026-10-12에는 사용자 승인을 받은 뒤 서버의 `kakao-attachment-test.txt`(74바이트)를 ‘나와의 대화’에 첨부 전송했습니다. Wine의 `Z:` 경로로 파일을 선택하고 별도의 **Send 1 files** 확인 창에서 전송한 뒤, 파일 말풍선의 이름·크기·전송 시각을 확인했습니다. 이번 검증은 작은 텍스트 파일 전송에 해당하며, 전송한 파일의 원격 재다운로드와 대용량·다른 형식의 첨부는 확인하지 않았습니다. 새 설치 스크립트의 다른 장비 설치도 아직 확인하지 않았습니다.
 
 <a id="install"></a>
@@ -70,9 +72,20 @@ cat ~/.local/share/kakaotalk-dgx-spark/vnc-password.txt
 
 QR이 만료되면 PC 화면의 새로고침 아이콘으로 새 QR을 받아 다시 스캔하세요. QR은 서버 내부 파일 링크가 아니라 **noVNC 브라우저 화면**에서 확인합니다. PC 앱에서 **How to log in with a QR code** 안내도 볼 수 있습니다.
 
-### 3. QR을 사용할 수 없는 경우
+### 3. 계정을 한 번 등록하고 로그아웃 시 자동 로그인하기
 
-PC 앱이 제공하는 계정 로그인 입력 칸을 사용자가 noVNC에서 직접 입력하고, 추가 인증이 뜨면 휴대폰 안내를 따라 완료하세요. 계정 비밀번호를 에이전트의 프롬프트·설정 파일에 넣지 않습니다. 인증이 진행되지 않으면 앱의 오류 문구를 확인하고 [카카오 고객센터](https://cs.kakao.com/)를 참고하세요.
+QR 대신 아이디·비밀번호로 로그인할 수 있습니다. 서버 터미널에서 한 번 등록하면 에이전트가 로그아웃을 확인했을 때만 로컬에서 읽어 입력합니다. 아이디와 비밀번호 모두 입력 중에는 표시되지 않습니다.
+
+```bash
+.venv/bin/python credentials.py set
+.venv/bin/python credentials.py status
+```
+
+등록값은 데이터 디렉터리의 `login.json`에 권한 600으로 저장됩니다. 기본 경로는 `~/.local/share/kakaotalk-dgx-spark/login.json`이며 저장소 밖입니다. 이 파일은 평문이므로 서버 계정의 접근 권한으로 보호합니다. 계정정보를 프롬프트·코드·MCP 인자·로그·GitHub에 넣지 마세요. 입력 후 공유 클립보드는 비웁니다.
+
+스킬은 작업 전에 `ensure_logged_in`을 호출합니다. 로그인에 성공하면 방과 입력 칸을 다시 확인한 뒤 메시지를 준비합니다. 일반 `type_text`도 세션을 검사하며, 재로그인 직후나 상태를 확인하지 못한 경우 `typed: false`를 반환해 문장을 입력하지 않습니다.
+
+로그인 실패나 추가 인증이 나타나면 자동 재시도를 막습니다. noVNC에서 직접 인증을 완료하거나 `credentials.py set`으로 자격증명을 다시 등록한 뒤 이어가세요. `credentials.py forget`은 저장값만 삭제하고 앱을 로그아웃하지 않습니다. MCP 없이 검사하려면 `.venv/bin/python auth.py`를 실행합니다. 계정을 저장하지 않고 noVNC에서 직접 로그인해도 됩니다.
 
 자동 로그인은 본인이 관리하는 서버에서만 상황에 맞게 선택하세요. 기존 로그인 정보는 데이터 디렉터리의 Wine prefix에 보관됩니다. 재접속할 때마다 prefix를 삭제하거나 초기화할 필요는 없습니다.
 
@@ -86,6 +99,25 @@ codex mcp add kakao-desktop -- "$PWD/.venv/bin/python" "$PWD/mcp_server.py"
 claude mcp add --scope user --transport stdio kakao-desktop \
   -- "$PWD/.venv/bin/python" "$PWD/mcp_server.py"
 ```
+
+로컬 대화(Hermes `local-chat`)에도 같은 스킬을 설치할 수 있습니다. 아래 두 명령은 로컬 대화용이며, 첫 명령은 최초 설치, 두 번째는 기존 설치본 업데이트입니다.
+
+```bash
+.venv/bin/python install_skill.py local
+.venv/bin/python install_skill.py local --update
+```
+
+설치 위치는 `$HERMES_HOME/skills/카카오톡/` 또는 기본 `~/.hermes/local-chat/skills/카카오톡/`입니다. 로컬 대화의 `config.yaml`에 MCP를 연결하세요. 경로는 실제 저장소와 가상환경 경로로 바꿉니다. `KAKAOTALK_DATA_DIR`를 사용한다면 이 서버 설정의 `env`에도 같은 값을 지정하세요.
+
+```yaml
+mcp_servers:
+  kakao-desktop:
+    command: /absolute/path/kakaotalk-dgx-spark/.venv/bin/python
+    args:
+      - /absolute/path/kakaotalk-dgx-spark/mcp_server.py
+```
+
+설치 후 새 로컬 대화에서 `카카오톡` 스킬을 읽으세요. 메시지·첨부 전송 승인 절차는 로컬 대화에도 같습니다.
 
 새 세션에서 `/카카오톡`을 호출하세요. 예를 들면 다음처럼 요청할 수 있습니다.
 
@@ -112,18 +144,19 @@ claude mcp add --scope user --transport stdio kakao-desktop \
 
 기본 데이터 위치는 `~/.local/share/kakaotalk-dgx-spark/`이며 저장소 밖에 있습니다. `KAKAOTALK_DATA_DIR`로 바꾸면 실행 명령과 MCP에도 같은 환경변수를 전달하세요. `KAKAOTALK_DISPLAY`는 기본 화면 번호 `:119`를 변경합니다. 포트는 5906과 6086으로 고정되어 있어 한 호스트에서 한 인스턴스를 사용합니다. 외부 PC 접속은 위의 SSH 포트 전달을 이용합니다.
 
-스킬 설치 위치는 `~/.codex/skills/카카오톡/`와 `~/.claude/skills/카카오톡/`입니다. 기존 스킬이 있으면 덮어쓰지 않습니다. 스킬에는 현재 저장소와 Python 실행 경로가 들어가므로 설치 후 저장소 폴더를 유지하세요. 다른 MCP 클라이언트의 설정 예시는 [영문 안내](README.en.md#connect-claude-code-and-codex)에 있습니다.
+스킬 설치 위치는 `~/.codex/skills/카카오톡/`와 `~/.claude/skills/카카오톡/`입니다. 기존 스킬이 있으면 기본적으로 덮어쓰지 않습니다. `install_skill.py both --update`는 현재본을 데이터 디렉터리의 `skill-backups/`에 백업하고 업데이트합니다. `all`은 로컬 대화까지 포함합니다. 원본과 연결된 심링크 스킬은 덮어쓰지 않습니다. 스킬에는 현재 저장소와 Python 실행 경로가 들어가므로 설치 후 저장소 폴더를 유지하세요. 다른 MCP 클라이언트의 설정 예시는 [영문 안내](README.en.md#connect-claude-code-and-codex)에 있습니다.
 
 ## 제공하는 도구
 
 | 도구 | 동작 |
 | --- | --- |
 | `start_desktop` | 전용 화면 시작·재접속 |
+| `ensure_logged_in` | 세션 확인, 로그아웃 시 로컬 계정으로 한 번 로그인 |
 | `screen` | 현재 화면 PNG 반환, 파일 저장 없음 |
 | `read_screen` | 로컬 한글·영문 OCR과 좌표 반환 |
 | `click`, `move_mouse` | 확인한 화면 좌표 클릭·포인터 이동 |
 | `press` | 키 조합 입력. Enter는 메시지를 보낼 수 있음 |
-| `type_text` | Enter 없이 Unicode 붙여넣기 |
+| `type_text` | 세션 확인 후 Enter 없이 Unicode 붙여넣기 |
 | `scroll` | 포인터가 가리키는 영역 스크롤 |
 
 서버의 `/home/USER/projects/document.docx`는 Wine 파일 선택 창에서 `Z:\home\USER\projects\document.docx`로 접근합니다. 확인한 버전에서는 Open 뒤에 **Send 1 files** 창이 나타났지만, 버전별 동작을 단정하지 않고 파일 선택 확정 전에 승인을 받습니다.
