@@ -31,6 +31,8 @@ def install(agent, update=False):
     target.mkdir(parents=True, exist_ok=True)
     skill.write_text(text)
     print(f'{agent}: installed /카카오톡 at {target}; open a new agent session.')
+    if agent == 'local':
+        print('Register the kakao-desktop MCP server and add kakao-desktop and skills to platform_toolsets.cli.')
 
 
 if __name__ == '__main__':

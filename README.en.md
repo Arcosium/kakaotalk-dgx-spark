@@ -131,9 +131,11 @@ The installer writes the skill to `~/.codex/skills/카카오톡/` and `~/.claude
 .venv/bin/python install_skill.py local --update
 ```
 
-The local skill uses `$HERMES_HOME/skills` or `~/.hermes/local-chat/skills`. `install_skill.py all` includes Claude Code, Codex and local conversations. Add the server to your local agent's `config.yaml`, replacing the absolute paths below. If you use `KAKAOTALK_DATA_DIR`, set the same value in the server's `env`.
+The local skill uses `$HERMES_HOME/skills` or `~/.hermes/local-chat/skills`. `install_skill.py all` includes Claude Code, Codex and local conversations. Register the server in your local agent's `config.yaml` and add `skills` and `kakao-desktop` to the existing `platform_toolsets.cli` list. Explicitly listing another MCP server can restrict the enabled servers to that list: registration alone does not expose KakaoTalk tools to the model. The following is a minimal example; retain your other existing toolsets. Replace the absolute paths. If you use `KAKAOTALK_DATA_DIR`, set the same value in the server's `env`.
 
 ```yaml
+platform_toolsets:
+  cli: [web, file, skills, kakao-desktop]
 mcp_servers:
   kakao-desktop:
     command: /absolute/path/kakaotalk-dgx-spark/.venv/bin/python
@@ -141,7 +143,7 @@ mcp_servers:
       - /absolute/path/kakaotalk-dgx-spark/mcp_server.py
 ```
 
-Start a new local conversation and load the `카카오톡` skill. Text-only agents use `read_screen`; ambiguous recipients or text require inspection before proceeding. The same explicit approval is required for every message or file transmission.
+Start a new local conversation process and load the `카카오톡` skill; existing processes may retain the previous tool list. Custom chat/work mode plugins must retain `skills` and `kakao-desktop` in chat mode too. Text-only agents use `read_screen`; ambiguous recipients or text require inspection before proceeding. The same explicit approval is required for every message or file transmission.
 
 Other MCP clients can use the same stdio configuration:
 

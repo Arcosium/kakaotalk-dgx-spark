@@ -23,7 +23,11 @@ Use the `kakao-desktop` MCP tools on the dedicated desktop. The local checkout i
 
 Install this same skill with `{{PYTHON}} {{REPO}}/install_skill.py local` and configure `kakao-desktop` in the local agent's MCP settings. The installer uses `$HERMES_HOME/skills` or `~/.hermes/local-chat/skills`. Start a new local conversation and load `카카오톡`. If images are unavailable, use `read_screen` and stop on ambiguous recipients or text. All send approvals below apply equally to local agents. To refresh an existing installed copy, use `install_skill.py local --update`; it backs up the current skill first and preserves source-managed symlinks.
 
+Registration alone is insufficient when `platform_toolsets.cli` explicitly selects MCP servers: add both `kakao-desktop` and `skills` to the existing list. A custom chat/work mode plugin must retain both in chat mode. Existing processes may retain an old tool list; use a new process after changing the configuration. If tools appear unavailable, inspect the effective enabled toolsets before concluding that the server is unreachable.
+
 ## Read chats
+
+Requests such as “최근에 보낸 카톡 뭐야?” (what did I last send on KakaoTalk?) require the actual KakaoTalk screen, not memory, wiki or general filesystem searches. Inspect recent rooms and timestamps in the chat list, verify the room title before opening, and distinguish outgoing bubbles from received messages. Ask which room if the target remains ambiguous. Report the room and PC-visible scope; do not claim a globally latest outgoing message without evidence.
 
 Open the requested room and verify its visible title and participants. Ask if names or room selection are ambiguous. Opening a room can mark messages read. Read only the requested range; separate sender, time and body. Only report messages visible or synced to this PC, not the complete mobile history.
 

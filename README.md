@@ -107,9 +107,11 @@ claude mcp add --scope user --transport stdio kakao-desktop \
 .venv/bin/python install_skill.py local --update
 ```
 
-설치 위치는 `$HERMES_HOME/skills/카카오톡/` 또는 기본 `~/.hermes/local-chat/skills/카카오톡/`입니다. 로컬 대화의 `config.yaml`에 MCP를 연결하세요. 경로는 실제 저장소와 가상환경 경로로 바꿉니다. `KAKAOTALK_DATA_DIR`를 사용한다면 이 서버 설정의 `env`에도 같은 값을 지정하세요.
+설치 위치는 `$HERMES_HOME/skills/카카오톡/` 또는 기본 `~/.hermes/local-chat/skills/카카오톡/`입니다. 로컬 대화의 `config.yaml`에 MCP를 연결하고 `platform_toolsets.cli`의 기존 목록에 `skills`와 `kakao-desktop`을 추가하세요. MCP를 등록해도 목록에 다른 MCP 서버만 명시돼 있으면 카카오톡 도구는 모델에 전달되지 않습니다. 아래는 최소 예시이며 기존 도구 항목을 지우지 마세요. 경로는 실제 저장소와 가상환경 경로로 바꿉니다. `KAKAOTALK_DATA_DIR`를 사용한다면 이 서버 설정의 `env`에도 같은 값을 지정하세요.
 
 ```yaml
+platform_toolsets:
+  cli: [web, file, skills, kakao-desktop]
 mcp_servers:
   kakao-desktop:
     command: /absolute/path/kakaotalk-dgx-spark/.venv/bin/python
@@ -117,7 +119,7 @@ mcp_servers:
       - /absolute/path/kakaotalk-dgx-spark/mcp_server.py
 ```
 
-설치 후 새 로컬 대화에서 `카카오톡` 스킬을 읽으세요. 메시지·첨부 전송 승인 절차는 로컬 대화에도 같습니다.
+설치 후 새 로컬 대화 프로세스에서 `카카오톡` 스킬을 읽으세요. 이미 실행 중인 프로세스는 이전 도구 목록을 유지할 수 있습니다. 별도 대화/작업 모드 플러그인이 있다면 대화 모드에서도 `skills`와 `kakao-desktop`을 남겨야 합니다. 메시지·첨부 전송 승인 절차는 로컬 대화에도 같습니다.
 
 새 세션에서 `/카카오톡`을 호출하세요. 예를 들면 다음처럼 요청할 수 있습니다.
 
